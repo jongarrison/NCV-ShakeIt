@@ -1,0 +1,5 @@
+.pio
+*auto_saved_files*
+*-backups*
+*.lck*
+.vscode
