@@ -3,3 +3,4 @@
 *-backups*
 *.lck*
 .vscode
+**/DustBin_PCB-backups/

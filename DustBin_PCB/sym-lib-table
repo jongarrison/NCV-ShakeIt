@@ -1,0 +1,5 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "DFPlayer")(type "KiCad")(uri "/Users/jon/Documents/KiCad/JG_Custom_Library_Stuff/DFR0299/DFR0299.kicad_sym")(options "")(descr ""))
+  (lib (name "XIAO_SAMD21")(type "KiCad")(uri "/Users/jon/Documents/KiCad/JG_Custom_Library_Stuff/OPL_Kicad_Library/Seeed Studio XIAO Series Library/Seeed_Studio_XIAO_Series.kicad_sym")(options "")(descr ""))
+)

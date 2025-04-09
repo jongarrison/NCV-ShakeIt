@@ -77,27 +77,26 @@ namespace dfplay {
         } else {
             Serial.println(F("DFPlayer Mini online."));
 
+            if (myDFPlayer.available()) {
+                printDfPlayerDetail(myDFPlayer.readType(), myDFPlayer.read());
+            } else {
+                Serial.println(F("DFPlayer Mini possibly not initialized."));
+            }
+
             myDFPlayer.volume(volume);  // Set volume value. From 0 to 30
             return true;
         }
     }
 
-    bool initDfPlayerWithRetry(int volume) {
-        //Serial1.begin(9600); // Must be done in setup()
-
-        while (!initDfPlayer(volume)) {
-            Serial.println(F("Retrying to initialize DFPlayer ..."));
-            delay(5000);
-        }
-
-        if (myDFPlayer.available()) {
-            printDfPlayerDetail(myDFPlayer.readType(), myDFPlayer.read());
-        }
-
-        return true;
+    bool isDfPlayerAvailable() {
+        return myDFPlayer.available();
     }
 
     void playTrack(int track) {
+        if (!isDfPlayerAvailable()) {
+            //HERE HERE!
+            initDfPlayer(10);
+        }
         Serial.print("Playing track: ");
         myDFPlayer.play(track);
         Serial.println(track);

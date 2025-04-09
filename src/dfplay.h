@@ -8,7 +8,7 @@ namespace dfplay {
     extern DFRobotDFPlayerMini myDFPlayer;
 
     bool initDfPlayer(int volume);
-    bool initDfPlayerWithRetry(int volume);
+    bool isDfPlayerAvailable();
     void playTrack(int track);
     void playRandomTrack(int trackMin, int trackMaxInclusive);
     void stop();

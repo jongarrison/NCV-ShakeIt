@@ -2,6 +2,7 @@
 #include <SimpleTimer.h>
 #include "ncv.h"
 #include "dfplay.h"
+#include "PotKnob.h"
 
 SimpleTimer timer;
 
@@ -13,47 +14,21 @@ SimpleTimer timer;
 #define PIN_RELAY2 A4
 #define MP3_RX D7
 #define MP3_TX D6
+#define MP3_VOLUME 30
 
 
-float timeKnobValue = 1.0;
-float squelchKnobValue = 1.0;
 long monitoredInputOnSince = 0;
 
 const int monitoredInputTriggerThresholdMS = 5000;
 const int minimumRelayOnMS = 2000;
-const int maximumRelayOnMS = 15000;
+const int maximumRelayOnMS = 30000;
 
 const int musicalBreakDurationMS = 10000;
 
 bool isEmfScanningOn = false;
 
-float mapFloatVal(float x, float in_min, float in_max, float out_min, float out_max) {
-  return (float)(x - in_min) * (out_max - out_min) / (float)(in_max - in_min) + out_min;
-}
-
-float getTimeKnobValue() {
-    int lowVal = 2;
-    int highVal = 1023;
-    timeKnobValue = mapFloatVal(constrain(analogRead(PIN_TIMEKNOB), lowVal, highVal), lowVal, highVal, 0.0, 1.0);  
-
-    Serial.print("Time knob value: ");  Serial.println(timeKnobValue);
-    return timeKnobValue;
-}
-
-float getSquelchKnobValue() {
-    int lowVal = 2;
-    int highVal = 1023;
-    squelchKnobValue = mapFloatVal(constrain(analogRead(PIN_SQUELCHKNOB), lowVal, highVal), lowVal, highVal, 0.0, 1.0);  
-
-    // Serial.print("getSquelchKnobValue: ");  Serial.println(squelchKnobValue);
-    return squelchKnobValue;
-}
-
-int getRelayOnDurationMS() {
-    int result = (int)mapFloatVal(getTimeKnobValue(), 0.0, 1.0, minimumRelayOnMS, maximumRelayOnMS);
-    Serial.print("getRelayOnDurationMS: ");  Serial.println(result);
-    return result;
-}
+PotKnob relayOnTimeKnob(PIN_TIMEKNOB, 2, 1023, maximumRelayOnMS, minimumRelayOnMS); //Notice the reversed knob values
+PotKnob squelchKnob(PIN_SQUELCHKNOB, 2, 1023, 40.0, 2.0);
 
 int getRandomTrack() {
     return random(1, 4); // Generate a random number between 1 and 3
@@ -68,9 +43,13 @@ int getRandomTrack() {
 }
 
 void setup() {
-    pinMode(PIN_TIMEKNOB, INPUT);
     pinMode(PIN_LED_POWER_INDICATOR, OUTPUT);
     pinMode(PIN_LED_TRIGGER_INDICATOR, OUTPUT);
+    digitalWrite(PIN_LED_POWER_INDICATOR, HIGH);
+    digitalWrite(PIN_LED_TRIGGER_INDICATOR, HIGH);
+
+    pinMode(PIN_TIMEKNOB, INPUT);
+    pinMode(PIN_SQUELCHKNOB, INPUT);
     pinMode(PIN_EMF_ANTENNA, INPUT);
 
     pinMode(PIN_RELAY1, OUTPUT);
@@ -82,15 +61,20 @@ void setup() {
     Serial.println("Starting up...");
 
     Serial1.begin(9600); // Serial1 is used to communicate with DFPlayer
-    dfplay::initDfPlayerWithRetry(25);
+    dfplay::initDfPlayer(MP3_VOLUME);
 
     timer.setInterval(1000, [](){
         if (!isEmfScanningOn) {
             return;
         }
 
+        Serial.println("Relay on time work:");
+        float relayOnTime = relayOnTimeKnob.getMappedValue();
+        Serial.println("Squelch work:");
+        float squelchValue = squelchKnob.getMappedValue();
+
         long now = millis();
-        if (ncv::isEmfDetected(getSquelchKnobValue())) {
+        if (ncv::isEmfDetected(squelchValue)) {
             if (monitoredInputOnSince == 0) {
                 monitoredInputOnSince = now;
                 Serial.print("Monitored input is first ON at: ");  Serial.println(now);
@@ -123,7 +107,7 @@ void setup() {
                     digitalWrite(PIN_RELAY1, HIGH);
                     digitalWrite(PIN_RELAY2, HIGH);
     
-                    timer.setTimeout(getRelayOnDurationMS(), [](){
+                    timer.setTimeout((long)relayOnTimeKnob.getMappedValue(), [](){
                         Serial.print("Turning off relays at: "); Serial.println(millis());
                         digitalWrite(PIN_RELAY1, LOW);
                         digitalWrite(PIN_RELAY2, LOW);

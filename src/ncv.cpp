@@ -1,6 +1,10 @@
 #include "ncv.h"
 #include <iostream>
 
+/**
+ * Inspired by: https://www.instructables.com/Contactless-AC-Detector/
+ */
+
 namespace ncv {
 
     float emfVal;                            //where to store info from analog 6
@@ -8,7 +12,6 @@ namespace ncv {
     float amplitudeScaleMax = 200.0;
     
     bool isEmfDetected(float squelchValue) {
-        int squelchFactor = (int)(squelchValue * amplitudeScaleMax);
         int16_t adc0;
         long sum, t;
         double c[200], s[200], amplitude, cp, sp, phi;
@@ -37,16 +40,13 @@ namespace ncv {
         emfVal = constrain(emfVal, 0, amplitudeScaleMax);       
         // emfVal = map(emfVal, 0, amplitudeScaleMax, 0, 255);
     
-        isDetected = emfVal > squelchFactor;
+        isDetected = emfVal > squelchValue;
     
         Serial.print("isDetected: ");
         Serial.print(isDetected ? "+" : "-");
         Serial.print(" | ");
-        Serial.print("Amplitude: ");
+        Serial.print("EMF Amplitude: ");
         Serial.print(amplitude);
-        Serial.print(" | ");
-        Serial.print("EMF Value: ");
-        Serial.print(emfVal);
         Serial.print(" | ");
         // Serial.print(" cp: ");
         // Serial.print(cp);
@@ -58,7 +58,7 @@ namespace ncv {
         Serial.print(adc0);
         Serial.print(" | ");
         Serial.print(" squ: ");
-        Serial.print(squelchFactor);
+        Serial.print(squelchValue);
         Serial.println();
     
         return isDetected;
