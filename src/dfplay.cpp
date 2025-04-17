@@ -92,19 +92,18 @@ namespace dfplay {
         return myDFPlayer.available();
     }
 
-    void playTrack(int track) {
+    void playTrack(int track, int volume) {
         if (!isDfPlayerAvailable()) {
-            //HERE HERE!
-            initDfPlayer(10);
+            initDfPlayer(volume);
         }
         Serial.print("Playing track: ");
         myDFPlayer.play(track);
         Serial.println(track);
     }
 
-    void playRandomTrack(int trackMin, int trackMaxInclusive) {
+    void playRandomTrack(int trackMin, int trackMaxInclusive, int volume) {
         int track = random(trackMin, trackMaxInclusive + 1);
-        playTrack(track);
+        playTrack(track, volume);
     }
 
     void stop() {

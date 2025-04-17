@@ -23,22 +23,22 @@ public:
 
         float result = ((float)(constrainedValue - inAdcLowVal) * (maxOutput - minOutput) / (float)(inAdcHighVal - inAdcLowVal)) + minOutput;
 
-        Serial.print(adcPin);
-        Serial.print("- ");
-        Serial.print("Knob val: ");
-        Serial.print(result);
-        Serial.print(" | ");
-        Serial.print("ADC Value: ");
-        Serial.print(adcValue);
-        Serial.print(" | ");
-        Serial.print("Constrained Value: ");
-        Serial.print(constrainedValue);
-        Serial.print(" | ");
-        Serial.print("minOutput: ");
-        Serial.print(minOutput);
-        Serial.print(" | ");
-        Serial.print("maxOutput: ");
-        Serial.println(maxOutput);
+        // Serial.print(adcPin);
+        // Serial.print("- ");
+        // Serial.print("Knob val: ");
+        // Serial.print(result);
+        // Serial.print(" | ");
+        // Serial.print("ADC Value: ");
+        // Serial.print(adcValue);
+        // Serial.print(" | ");
+        // Serial.print("Constrained Value: ");
+        // Serial.print(constrainedValue);
+        // Serial.print(" | ");
+        // Serial.print("minOutput: ");
+        // Serial.print(minOutput);
+        // Serial.print(" | ");
+        // Serial.print("maxOutput: ");
+        // Serial.println(maxOutput);
         return result;
     }
 

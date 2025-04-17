@@ -9,8 +9,8 @@ namespace dfplay {
 
     bool initDfPlayer(int volume);
     bool isDfPlayerAvailable();
-    void playTrack(int track);
-    void playRandomTrack(int trackMin, int trackMaxInclusive);
+    void playTrack(int track, int volume);
+    void playRandomTrack(int trackMin, int trackMaxInclusive, int volume);
     void stop();
 }
 

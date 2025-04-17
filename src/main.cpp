@@ -4,8 +4,6 @@
 #include "dfplay.h"
 #include "PotKnob.h"
 
-SimpleTimer timer;
-
 #define PIN_TIMEKNOB A9
 #define PIN_SQUELCHKNOB A8
 #define PIN_LED_POWER_INDICATOR A1
@@ -15,7 +13,10 @@ SimpleTimer timer;
 #define MP3_RX D7
 #define MP3_TX D6
 #define MP3_VOLUME 30
+#include <AceButton.h>
+using namespace ace_button;
 
+const int PIN_OVERRIDE_BUTTON=D0;
 
 long monitoredInputOnSince = 0;
 
@@ -27,22 +28,38 @@ const int musicalBreakDurationMS = 10000;
 
 bool isEmfScanningOn = false;
 
+SimpleTimer timer;
+AceButton overrideButton(PIN_OVERRIDE_BUTTON);
 PotKnob relayOnTimeKnob(PIN_TIMEKNOB, 2, 1023, maximumRelayOnMS, minimumRelayOnMS); //Notice the reversed knob values
 PotKnob squelchKnob(PIN_SQUELCHKNOB, 2, 1023, 40.0, 2.0);
 
-int getRandomTrack() {
-    return random(1, 4); // Generate a random number between 1 and 3
-    // int randomValue = random(0, 100); // Generate a random number between 0 and 99
-    // if (randomValue < 95) {
-    //     return 1;
-    // } else if (randomValue < 97) {
-    //     return 2;
-    // } else {
-    //     return 3;
-    // }
+void activateRelaySequence() {
+    Serial.print("Turning on relays at: ");  Serial.println(millis());
+    isEmfScanningOn = false;
+
+    digitalWrite(PIN_RELAY1, HIGH);
+    digitalWrite(PIN_RELAY2, HIGH);
+
+    timer.setTimeout((long)relayOnTimeKnob.getMappedValue(), [](){
+        Serial.print("Turning off relays at: "); Serial.println(millis());
+        digitalWrite(PIN_RELAY1, LOW);
+        digitalWrite(PIN_RELAY2, LOW);
+
+        Serial.println("Starting the EMF scanning again...");
+        isEmfScanningOn = true;
+    });
+}
+
+void handleOverrideButton(AceButton* /*button*/, uint8_t eventType, uint8_t /*buttonState*/) {
+    if (eventType == AceButton::kEventPressed) {
+        activateRelaySequence();
+    }
 }
 
 void setup() {
+    pinMode(PIN_OVERRIDE_BUTTON, INPUT_PULLUP);
+    overrideButton.setEventHandler(handleOverrideButton);
+
     pinMode(PIN_LED_POWER_INDICATOR, OUTPUT);
     pinMode(PIN_LED_TRIGGER_INDICATOR, OUTPUT);
     digitalWrite(PIN_LED_POWER_INDICATOR, HIGH);
@@ -68,9 +85,9 @@ void setup() {
             return;
         }
 
-        Serial.println("Relay on time work:");
-        float relayOnTime = relayOnTimeKnob.getMappedValue();
-        Serial.println("Squelch work:");
+        // Serial.println("Relay on time work:");
+        // float relayOnTime = relayOnTimeKnob.getMappedValue();
+        // Serial.println("Squelch work:");
         float squelchValue = squelchKnob.getMappedValue();
 
         long now = millis();
@@ -93,7 +110,7 @@ void setup() {
 
                 timer.setTimeout(50, [](){
                     Serial.print("Starting the music at: ");  Serial.println(millis());
-                    dfplay::playTrack(getRandomTrack());
+                    dfplay::playRandomTrack(1, 3, MP3_VOLUME);
 
                     timer.setTimeout(musicalBreakDurationMS, [](){
                         Serial.print("Stopping the music at: ");  Serial.println(millis());
@@ -102,20 +119,7 @@ void setup() {
                 });
 
                 timer.setTimeout(musicalBreakDurationMS + 500, [](){
-
-                    Serial.print("Turning on relays at: ");  Serial.println(millis());
-                    digitalWrite(PIN_RELAY1, HIGH);
-                    digitalWrite(PIN_RELAY2, HIGH);
-    
-                    timer.setTimeout((long)relayOnTimeKnob.getMappedValue(), [](){
-                        Serial.print("Turning off relays at: "); Serial.println(millis());
-                        digitalWrite(PIN_RELAY1, LOW);
-                        digitalWrite(PIN_RELAY2, LOW);
-
-                        Serial.println("Starting the EMF scanning again...");
-                        isEmfScanningOn = true;
-                    });
-
+                    activateRelaySequence();
                 });
             }            
             monitoredInputOnSince = 0;
@@ -129,4 +133,6 @@ void setup() {
 
 void loop() {
     timer.run();
+    overrideButton.check();
 }
+
