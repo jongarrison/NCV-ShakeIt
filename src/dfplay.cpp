@@ -1,112 +1,82 @@
 #include "dfplay.h"
 
+#define DFPLAY_MIN_TRACK 1
+#define DFPLAY_MAX_TRACK 3
+
+
 namespace dfplay {
     DFRobotDFPlayerMini myDFPlayer;
 
-    void printDfPlayerDetail(uint8_t type, int value) {
-        switch (type) {
-            case TimeOut:
-                Serial.println(F("Time Out!"));
-                break;
-            case WrongStack:
-                Serial.println(F("Stack Wrong!"));
-                break;
-            case DFPlayerCardInserted:
-                Serial.println(F("Card Inserted!"));
-                break;
-            case DFPlayerCardRemoved:
-                Serial.println(F("Card Removed!"));
-                break;
-            case DFPlayerCardOnline:
-                Serial.println(F("Card Online!"));
-                break;
-            case DFPlayerUSBInserted:
-                Serial.println("USB Inserted!");
-                break;
-            case DFPlayerUSBRemoved:
-                Serial.println("USB Removed!");
-                break;
-            case DFPlayerPlayFinished:
-                Serial.print(F("Number:"));
-                Serial.print(value);
-                Serial.println(F(" Play Finished!"));
-                break;
-            case DFPlayerError:
-                Serial.print(F("DFPlayerError:"));
-                switch (value) {
-                    case Busy:
-                        Serial.println(F("Card not found"));
-                        break;
-                    case Sleeping:
-                        Serial.println(F("Sleeping"));
-                        break;
-                    case SerialWrongStack:
-                        Serial.println(F("Get Wrong Stack"));
-                        break;
-                    case CheckSumNotMatch:
-                        Serial.println(F("Check Sum Not Match"));
-                        break;
-                    case FileIndexOut:
-                        Serial.println(F("File Index Out of Bound"));
-                        break;
-                    case FileMismatch:
-                        Serial.println(F("Cannot Find File"));
-                        break;
-                    case Advertise:
-                        Serial.println(F("In Advertise"));
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            default:
-                break;
-        }
-    }
+    bool isInitSuccessful = false;
 
     bool initDfPlayer(int volume) {
-        Serial.println();
-        Serial.println(F("DFRobot DFPlayer Mini Demo"));
+        delay(1000);
         Serial.println(F("Initializing DFPlayer ... (May take 3~5 seconds)"));
 
         if (!myDFPlayer.begin(Serial1, /*isACK = */true, /*doReset = */true)) {  // Use serial to communicate with mp3.
-            Serial.println(F("Unable to begin:"));
-            Serial.println(F("1.Please recheck the connection!"));
-            Serial.println(F("2.Please insert the SD card!"));
+            Serial.println(F("Unable to start DF Player:"));
+            Serial.println(F("1. Recheck the connection"));
+            Serial.println(F("2. Check SD card is inserted"));
+
+            isInitSuccessful = false;
             return false;
         } else {
-            Serial.println(F("DFPlayer Mini online."));
-
-            if (myDFPlayer.available()) {
-                printDfPlayerDetail(myDFPlayer.readType(), myDFPlayer.read());
-            } else {
-                Serial.println(F("DFPlayer Mini possibly not initialized."));
-            }
-
-            myDFPlayer.volume(volume);  // Set volume value. From 0 to 30
+            Serial.println(F("DFPlayer Mini serial connection successful"));
+            isInitSuccessful = true;
+            setVolume(volume);
             return true;
         }
     }
 
     bool isDfPlayerAvailable() {
-        return myDFPlayer.available();
+        return isInitSuccessful;
     }
 
-    void playTrack(int track, int volume) {
-        if (!isDfPlayerAvailable()) {
-            initDfPlayer(volume);
+    /**
+     * Expect there to be a folder named 01 on the SD card, and inside it
+     * there should be files named 001.mp3, 002.mp3, etc.
+     * more text can be after the 3 digit prefixes
+     */
+    void playTrack(int track) {
+        if (!isInitSuccessful) {
+            Serial.println(F("DFPlayer was not successfully initialized, skipping music"));
+            return;
         }
-        Serial.print("Playing track: ");
-        myDFPlayer.play(track);
+        Serial.print("playTrack track: ");
         Serial.println(track);
+        Serial.print("playTrack readVolume: ");
+        Serial.println(myDFPlayer.readVolume());
+
+        myDFPlayer.playFolder((int)1, track);
+        Serial.println(("Play call done"));
     }
 
-    void playRandomTrack(int trackMin, int trackMaxInclusive, int volume) {
-        int track = random(trackMin, trackMaxInclusive + 1);
-        playTrack(track, volume);
+    void playRandomTrack() {
+        randomSeed(millis());
+        int track = random(DFPLAY_MIN_TRACK, DFPLAY_MAX_TRACK + 1);
+        Serial.print("Chose random track: ");
+        Serial.println(track);
+        playTrack(track);
     }
 
     void stop() {
+        if (!isInitSuccessful) {
+            Serial.println(F("DFPlayer was not successfully initialized, skipping stop"));
+            return;
+        }
         myDFPlayer.stop();
+    }
+
+    void setVolume(int volume) {
+        if (!isInitSuccessful) {
+            Serial.println(F("DFPlayer was not successfully initialized, skipping volume change"));
+            return;
+        }
+        Serial.print(F("setVolume setting: "));
+        Serial.println(volume);
+        myDFPlayer.volume(volume);
+        delay(100);
+        Serial.print(F("setVolume read: "));
+        Serial.println(myDFPlayer.readVolume());
     }
 }

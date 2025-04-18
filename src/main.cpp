@@ -2,7 +2,9 @@
 #include <SimpleTimer.h>
 #include "ncv.h"
 #include "dfplay.h"
-#include "PotKnob.h"
+#include "potknob.h"
+#include <AceButton.h>
+using namespace ace_button;
 
 #define PIN_TIMEKNOB A9
 #define PIN_SQUELCHKNOB A8
@@ -12,25 +14,19 @@
 #define PIN_RELAY2 A4
 #define MP3_RX D7
 #define MP3_TX D6
-#define MP3_VOLUME 30
-#include <AceButton.h>
-using namespace ace_button;
-
-const int PIN_OVERRIDE_BUTTON=D0;
+#define MP3_VOLUME 10
+#define RELAY_TRIGGER_DELAY_MS 10000
+#define MINIMUM_NCV_ON_TIME_MS 5000
+#define PIN_OVERRIDE_BUTTON 0
+#define POT_KNOB_MIN_MS 2000
+#define POT_KNOB_MAX_MS 30000
 
 long monitoredInputOnSince = 0;
-
-const int monitoredInputTriggerThresholdMS = 5000;
-const int minimumRelayOnMS = 2000;
-const int maximumRelayOnMS = 30000;
-
-const int musicalBreakDurationMS = 10000;
-
 bool isEmfScanningOn = false;
 
 SimpleTimer timer;
-AceButton overrideButton(PIN_OVERRIDE_BUTTON);
-PotKnob relayOnTimeKnob(PIN_TIMEKNOB, 2, 1023, maximumRelayOnMS, minimumRelayOnMS); //Notice the reversed knob values
+AceButton overrideButton(static_cast<double>(PIN_OVERRIDE_BUTTON));
+PotKnob relayOnTimeKnob(PIN_TIMEKNOB, 2, 1023, POT_KNOB_MAX_MS, POT_KNOB_MIN_MS); //Notice the reversed knob values, knob installed upside down
 PotKnob squelchKnob(PIN_SQUELCHKNOB, 2, 1023, 40.0, 2.0);
 
 void activateRelaySequence() {
@@ -51,14 +47,28 @@ void activateRelaySequence() {
 }
 
 void handleOverrideButton(AceButton* /*button*/, uint8_t eventType, uint8_t /*buttonState*/) {
-    if (eventType == AceButton::kEventPressed) {
+    Serial.print("Override button event: ");
+    Serial.println(eventType);
+
+    if (eventType == AceButton::kEventClicked) {
+        Serial.println("Override button kEventClicked");
         activateRelaySequence();
+    } else if (eventType == AceButton::kEventDoubleClicked) {
+        Serial.println("Override button kEventDoubleClicked");
+        dfplay::setVolume(MP3_VOLUME);
+        dfplay::playRandomTrack();
+    } else if (eventType == AceButton::kEventLongReleased) {
+        Serial.println("Override button kEventLongReleased - no action");
     }
 }
 
 void setup() {
     pinMode(PIN_OVERRIDE_BUTTON, INPUT_PULLUP);
-    overrideButton.setEventHandler(handleOverrideButton);
+    ButtonConfig* buttonConfig = overrideButton.getButtonConfig();
+    buttonConfig->setEventHandler(handleOverrideButton);
+    buttonConfig->setFeature(ButtonConfig::kFeatureDoubleClick);
+    buttonConfig->setFeature(ButtonConfig::kFeatureClick);
+    buttonConfig->setFeature(ButtonConfig::kFeatureSuppressClickBeforeDoubleClick);
 
     pinMode(PIN_LED_POWER_INDICATOR, OUTPUT);
     pinMode(PIN_LED_TRIGGER_INDICATOR, OUTPUT);
@@ -74,10 +84,12 @@ void setup() {
     digitalWrite(PIN_RELAY1, LOW);
     digitalWrite(PIN_RELAY2, LOW);
 
-    Serial.begin(115200);       
+    Serial.begin(115200);
+    delay(2000);    
     Serial.println("Starting up...");
 
     Serial1.begin(9600); // Serial1 is used to communicate with DFPlayer
+    delay(200);
     dfplay::initDfPlayer(MP3_VOLUME);
 
     timer.setInterval(1000, [](){
@@ -104,21 +116,22 @@ void setup() {
             digitalWrite(PIN_LED_TRIGGER_INDICATOR, LOW);            
             digitalWrite(PIN_LED_POWER_INDICATOR, HIGH);
 
-            if (monitoredInputOnSince != 0 && now - monitoredInputOnSince > monitoredInputTriggerThresholdMS) {                
+            if (monitoredInputOnSince != 0 && now - monitoredInputOnSince > MINIMUM_NCV_ON_TIME_MS) {                
                 Serial.println("Starting the music with included machine start delay");
                 isEmfScanningOn = false;
 
                 timer.setTimeout(50, [](){
                     Serial.print("Starting the music at: ");  Serial.println(millis());
-                    dfplay::playRandomTrack(1, 3, MP3_VOLUME);
+                    dfplay::setVolume(MP3_VOLUME);
+                    dfplay::playRandomTrack();
 
-                    timer.setTimeout(musicalBreakDurationMS, [](){
+                    timer.setTimeout(RELAY_TRIGGER_DELAY_MS, [](){
                         Serial.print("Stopping the music at: ");  Serial.println(millis());
                         dfplay::stop();
                     });
                 });
 
-                timer.setTimeout(musicalBreakDurationMS + 500, [](){
+                timer.setTimeout(RELAY_TRIGGER_DELAY_MS + 500, [](){
                     activateRelaySequence();
                 });
             }            

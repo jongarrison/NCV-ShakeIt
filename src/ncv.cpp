@@ -38,7 +38,6 @@ namespace ncv {
         amplitude =  sqrt(cp * cp + sp * sp);
         emfVal = amplitude;                 
         emfVal = constrain(emfVal, 0, amplitudeScaleMax);       
-        // emfVal = map(emfVal, 0, amplitudeScaleMax, 0, 255);
     
         isDetected = emfVal > squelchValue;
     
@@ -48,12 +47,6 @@ namespace ncv {
         Serial.print("EMF Amplitude: ");
         Serial.print(amplitude);
         Serial.print(" | ");
-        // Serial.print(" cp: ");
-        // Serial.print(cp);
-        // Serial.print(" | ");
-        // Serial.print(" sp: ");
-        // Serial.print(sp);
-        // Serial.print(" | ");
         Serial.print(" adc: ");
         Serial.print(adc0);
         Serial.print(" | ");
