@@ -14,6 +14,9 @@ Basic functions:
 
 # Technical Details
 
+### Non-contact Voltage Detector circuit and algorithm
+* Based on this very cool project: https://www.instructables.com/Contactless-AC-Detector/
+
 ### PCB Design
 * Kicad files are provided in ./PCB_NCV-ShakeIt
 

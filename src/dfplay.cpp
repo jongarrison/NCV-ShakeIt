@@ -75,8 +75,10 @@ namespace dfplay {
         Serial.print(F("setVolume setting: "));
         Serial.println(volume);
         myDFPlayer.volume(volume);
-        delay(100);
-        Serial.print(F("setVolume read: "));
-        Serial.println(myDFPlayer.readVolume());
+
+        // It's not clear that the readVolume actually works
+        // delay(250);
+        // Serial.print(F("setVolume read: "));
+        // Serial.println(myDFPlayer.readVolume());
     }
 }
