@@ -5,11 +5,13 @@
     <img src="notes/shakeit_openbox.jpg" style="width: 60%;" />
 </div>
 
+This device is designed to turn on two relays (currently for a single two phase motor) after detecting that another AC device has shut off. The running of the other AC device is detected using a Non-contact Voltage (NCV) detector. When the device is about to trigger the relays, it plays some audio feedback (mp3 files) to let people know the motor is about to run.
+
 
 Basic functions:
 * Device has an antenna for detecting 60hz AC power in a nearby wire. If AC is detected for longer than a minimum threshold the system is ready to trigger when the AC next shuts off. The sensitivity of the AC detection is controlled by a potentiometer knob.
 * The device waits for some interval while the main motor system spools down. During this spool down period audio is played to indicate what is happening.
-* After the spool down period, two relays are turned on for an interval set by another potentiometer knob.
+* After the spool down period, two relays are turned on for an interval set by another potentiometer knob. 
 
 
 # Technical Details

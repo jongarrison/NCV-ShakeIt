@@ -128,6 +128,9 @@ namespace action {
         digitalWrite(PIN_LED_TRIGGER_INDICATOR, HIGH);
         delay(200);
         digitalWrite(PIN_LED_POWER_INDICATOR, LOW);
+        digitalWrite(PIN_LED_TRIGGER_INDICATOR, HIGH);
+        delay(200);
+        digitalWrite(PIN_LED_POWER_INDICATOR, LOW);
         digitalWrite(PIN_LED_TRIGGER_INDICATOR, LOW);
     }
 
