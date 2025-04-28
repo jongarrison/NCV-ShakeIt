@@ -19,20 +19,20 @@ namespace ncv {
         sum = 0;
         i = 0;
         bool isDetected = false;
-        while (i < EMF_SAMPLE_COUNT) {
+        while (i < NCV_EMF_SAMPLE_COUNT) {
             adc0 = analogRead(PIN_EMF_ANTENNA) - 1023 * 3 / 5;
             t = micros();
-            phi = 6.2831853 * t / 1.0e6 * POWER_HZ;
+            phi = 6.2831853 * t / 1.0e6 * NCV_POWER_HZ;
             c[i] = (adc0 - averageADC)  * cos(phi);
             s[i] = (adc0 - averageADC)  * sin(phi);
             sum += adc0;
             i++;
         }
-        averageADC = (sum / EMF_SAMPLE_COUNT) ;
+        averageADC = (sum / NCV_EMF_SAMPLE_COUNT) ;
         i = 0; cp = 0; sp = 0;
-        while (i < EMF_SAMPLE_COUNT) {
-            cp += c[i] / EMF_SAMPLE_COUNT;
-            sp += s[i] / EMF_SAMPLE_COUNT;
+        while (i < NCV_EMF_SAMPLE_COUNT) {
+            cp += c[i] / NCV_EMF_SAMPLE_COUNT;
+            sp += s[i] / NCV_EMF_SAMPLE_COUNT;
             i++;
         }
         amplitude =  sqrt(cp * cp + sp * sp);

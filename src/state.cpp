@@ -4,12 +4,6 @@
 #include "ncv.h"
 #include "dfplay.h"
 
-// Define constants
-#define STATE_MINIMUM_EMF_DETECTION_TIME_MS 5 * 1000
-#define STATE_SPINDOWN_WAIT_TIME_MS 10 * 60 * 1000
-#define STATE_MUSIC_PLAY_TIME_MS 10 * 1000
-
-
 namespace state {
     // Current state of the system
     static State currentState = LISTENING;
@@ -53,6 +47,31 @@ namespace state {
         }
     }
 
+    void refreshDisplay() {
+       // Entry actions for the new state
+       switch (currentState) {
+        case LISTENING:
+            digitalWrite(PIN_LED_POWER_INDICATOR, HIGH);
+            digitalWrite(PIN_LED_TRIGGER_INDICATOR, LOW);
+            break;
+            
+        case EMF_DETECTED:
+            digitalWrite(PIN_LED_POWER_INDICATOR, LOW);
+            digitalWrite(PIN_LED_TRIGGER_INDICATOR, HIGH);
+            break;
+            
+        case SPINDOWN_WAIT:
+            digitalWrite(PIN_LED_POWER_INDICATOR, HIGH);
+            digitalWrite(PIN_LED_TRIGGER_INDICATOR, LOW);
+            break;
+            
+        case ACTIVATING:            
+            digitalWrite(PIN_LED_POWER_INDICATOR, LOW);
+            digitalWrite(PIN_LED_TRIGGER_INDICATOR, HIGH);
+            break;
+    }        
+    }
+
     // State transition function
     void transitionTo(State newState) {
         // Don't transition if we're already in that state
@@ -88,22 +107,17 @@ namespace state {
         currentState = newState;
         
         // Entry actions for the new state
+        // LED state will be updated after the switch statement
         switch (newState) {
             case LISTENING:
-                // Update LED indicators
-                digitalWrite(PIN_LED_POWER_INDICATOR, HIGH);
-                digitalWrite(PIN_LED_TRIGGER_INDICATOR, LOW);
+                //All the work for LISTENING is done in the update function
                 break;
                 
             case EMF_DETECTED:
                 // Record when EMF was first detected
                 if (emfFirstDetectedTime == 0) {
                     emfFirstDetectedTime = millis();
-                }
-                
-                // Update LED indicators
-                digitalWrite(PIN_LED_POWER_INDICATOR, LOW);
-                digitalWrite(PIN_LED_TRIGGER_INDICATOR, HIGH);
+                }                
                 break;
                 
             case SPINDOWN_WAIT:
@@ -118,10 +132,6 @@ namespace state {
                     greenLedState = !greenLedState;
                     digitalWrite(PIN_LED_TRIGGER_INDICATOR, greenLedState);
                 });
-                
-                // Update LED indicators
-                digitalWrite(PIN_LED_POWER_INDICATOR, HIGH);
-                digitalWrite(PIN_LED_TRIGGER_INDICATOR, LOW);
                 break;
                 
             case ACTIVATING:
@@ -146,13 +156,10 @@ namespace state {
                 relayStopTimerId = action::timer.setTimeout(STATE_MUSIC_PLAY_TIME_MS + 500 + action::getRelayOnDurationMs(), []() {
                     isRelayRunNeeded = false; // the relay run cycle completed
                     onActivationComplete();
-                });
-                
-                // Update LED indicators
-                digitalWrite(PIN_LED_POWER_INDICATOR, LOW);
-                digitalWrite(PIN_LED_TRIGGER_INDICATOR, HIGH);
+                });                
                 break;
         }
+        refreshDisplay();
     }
 
     // Initialize the state machine

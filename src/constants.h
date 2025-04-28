@@ -1,0 +1,39 @@
+#ifndef CONSTANTS_H
+#define CONSTANTS_H
+
+// Pin definitions
+#define PIN_TIMEKNOB A9
+#define PIN_SQUELCHKNOB A8
+#define PIN_LED_POWER_INDICATOR A1
+#define PIN_LED_TRIGGER_INDICATOR A2
+#define PIN_RELAY1 A3
+#define PIN_RELAY2 A4
+#define PIN_USER_OVERRIDE_BUTTON 0
+#define PIN_EMF_ANTENNA A5
+
+// MP3 Player settings
+#define PIN_DFPLAY_MP3_RX D7
+#define PIN_DFPLAY_MP3_TX D6
+#define DFPLAY_MP3_VOLUME_DEFAULT 25
+#define DFPLAY_MIN_TRACK 1
+#define DFPLAY_MAX_TRACK 3
+
+// Pot knob settings
+#define POTKNOB_RUNT_MIN_MS 2000
+#define POTKNOB_RUNT_MAX_MS 30000
+#define POTKNOB_SQUELCH_MIN 1.0
+#define POTKNOB_SQUELCH_MAX 30.0
+#define POTKNOB_VOLUME_MIN 0.0
+#define POTKNOB_VOLUME_MAX 30.0
+
+// State machine timings
+#define STATE_MINIMUM_EMF_DETECTION_TIME_MS (5 * 1000)
+#define STATE_SPINDOWN_WAIT_TIME_MS (10 * 60 * 1000)
+#define STATE_MUSIC_PLAY_TIME_MS (10 * 1000)
+
+// EMF detection settings
+#define NCV_EMF_SAMPLE_COUNT 200
+#define NCV_POWER_HZ 60
+
+#endif // CONSTANTS_H
+

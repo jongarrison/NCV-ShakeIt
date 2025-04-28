@@ -1,9 +1,5 @@
 #include "dfplay.h"
 
-#define DFPLAY_MIN_TRACK 1
-#define DFPLAY_MAX_TRACK 3
-
-
 namespace dfplay {
     DFRobotDFPlayerMini myDFPlayer;
 

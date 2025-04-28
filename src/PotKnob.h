@@ -2,6 +2,7 @@
 #define POTKNOB_H
 
 #include <Arduino.h>
+#include "constants.h"
 
 class PotKnob {
 private:

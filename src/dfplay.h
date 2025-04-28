@@ -3,6 +3,7 @@
 
 #include <Arduino.h>
 #include "DFRobotDFPlayerMini.h"
+#include "constants.h"
 
 namespace dfplay {
     extern DFRobotDFPlayerMini myDFPlayer;

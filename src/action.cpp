@@ -11,9 +11,9 @@ namespace action {
     
     SimpleTimer timer;
     AceButton overrideButton(static_cast<double>(PIN_USER_OVERRIDE_BUTTON));
-    PotKnob relayOnTimeKnob(PIN_TIMEKNOB, 2, 1023, POT_KNOB_MAX_MS, POT_KNOB_MIN_MS); //Notice the reversed knob values, knobs installed upside down
-    PotKnob squelchKnob(PIN_SQUELCHKNOB, 2, 1023, 30.0, 1.0); //Notice the reversed knob values, knobs installed upside down
-    PotKnob ephemeralVolumeKnob(PIN_TIMEKNOB, 2, 1023, 30.0, 0.0); //Notice the reversed knob values, knobs installed upside down
+    PotKnob relayOnTimeKnob(PIN_TIMEKNOB, 2, 1023, POTKNOB_RUNT_MAX_MS, POTKNOB_RUNT_MIN_MS); //Notice the reversed knob values, knobs installed upside down
+    PotKnob squelchKnob(PIN_SQUELCHKNOB, 2, 1023, POTKNOB_SQUELCH_MAX, POTKNOB_SQUELCH_MIN ); //Notice the reversed knob values, knobs installed upside down
+    PotKnob ephemeralVolumeKnob(PIN_TIMEKNOB, 2, 1023, POTKNOB_VOLUME_MAX, POTKNOB_VOLUME_MIN); //Notice the reversed knob values, knobs installed upside down
     FlashStorage(mp3_volume_storage, int);
 
     void initHardware(EventHandler eventHandler) {
@@ -82,7 +82,7 @@ namespace action {
         Serial.print("getVolumeStorage (offset +1): ");
         Serial.println(volume);
         if (volume < 1) { //Default condition
-            volume = MP3_VOLUME_DEFAULT;
+            volume = DFPLAY_MP3_VOLUME_DEFAULT;
             Serial.println("getVolumeStorage - default condition");
             setVolumeStorage(volume);
         } else { //Not default condition

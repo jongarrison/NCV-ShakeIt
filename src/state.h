@@ -2,6 +2,7 @@
 #define STATE_H
 
 #include <Arduino.h>
+#include "constants.h"
 
 namespace state {
 
